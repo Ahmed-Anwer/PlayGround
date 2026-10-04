@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💣</text></svg>">
+<title>Little Bombers Returns — عودة المفجّرين الصغار | 3D</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="bg-castle"></div>
+
+<!-- ===== Main Menu (like LBR) ===== -->
+<div id="screen-menu" class="screen active">
+  <div class="logo-wrap">
+    <div class="bomb-logo">💣</div>
+    <h1 class="game-title">Little Bombers <span>Returns</span></h1>
+    <h2 class="game-subtitle">عودة المفجّرين الصغار — نسخة 3D للكمبيوتر</h2>
+    <div class="stars">★ ★ ★ ★ ★</div>
+  </div>
+  <div class="menu-buttons">
+    <button class="mbtn primary" id="btn-adventure">🎮 مغامرة <small>لاعب واحد + وحوش + ٨ مراحل</small></button>
+    <button class="mbtn battle" id="btn-battle">⚔️ معركة <small>حتى ٤ لاعبين — إنسان ضد كمبيوتر</small></button>
+    <button class="mbtn" id="btn-help">❓ كيفية اللعب / أزرار التحكم</button>
+    <button class="mbtn" id="btn-settings">⚙️ الإعدادات <small>الصوت والموسيقى والجرافيك</small></button>
+  </div>
+  <div class="menu-footer">
+    <div class="chars-preview">
+      <div class="mini-bomber white"><i></i></div>
+      <div class="mini-bomber red"><i></i></div>
+      <div class="mini-bomber blue"><i></i></div>
+      <div class="mini-bomber green"><i></i></div>
+    </div>
+    <p>٤ شخصيات • ٤ لاعبين • قائمة + أصوات مثل الأصلية • WASD / أسهم / IJKL / numpad</p>
+    <p class="hint">اضغط <b>ملء الشاشة</b> لتجربة Desktop كاملة • Enter للبدء السريع</p>
+  </div>
+</div>
+
+<!-- ===== Setup / Character select ===== -->
+<div id="screen-setup" class="screen">
+  <h1 id="setup-title">اختر شخصيتك</h1>
+  <p id="setup-desc" class="muted"></p>
+  <div id="char-grid" class="char-grid"></div>
+  <div id="battle-config" class="panel hidden">
+    <h3>⚔️ إعداد المعركة — ٤ لاعبين</h3>
+    <div id="slot-rows"></div>
+    <div class="row">
+      <label>الجولات للفوز: <select id="sel-rounds"><option value="1">1</option><option value="3" selected>3</option><option value="5">5</option></select></label>
+      <label>الخريطة: <select id="sel-map"><option value="classic">كلاسيكية</option><option value="random">عشوائية</option><option value="arena">ساحة مفتوحة</option></select></label>
+      <label>الوقت: <select id="sel-time"><option value="99">99 ث</option><option value="180" selected>180 ث</option><option value="300">300 ث</option></select></label>
+    </div>
+  </div>
+  <div id="adv-config" class="panel hidden">
+    <h3>🎮 المغامرة — مثل Little Bombers الأصلية</h3>
+    <div class="row">
+      <label>المرحلة: <select id="sel-stage"></select></label>
+      <label>الصعوبة: <select id="sel-diff"><option value="easy">سهلة</option><option value="normal" selected>عادية</option><option value="hard">صعبة</option></select></label>
+    </div>
+    <p class="muted">اقضِ على كل الوحوش ثم ادخل الباب 🚪 المخفي تحت الطوب. اجمع القوى: 🔥 نار+ 💣 قنبلة+ ⚡ سرعة 🛡️ درع 👟 ركل</p>
+  </div>
+  <div class="row center">
+    <button class="mbtn primary" id="btn-start-game">💥 ابدأ اللعب</button>
+    <button class="mbtn" id="btn-back-menu">رجوع</button>
+  </div>
+</div>
+
+<!-- ===== Game screen ===== -->
+<div id="screen-game" class="screen">
+  <div id="hud">
+    <div id="hud-players"></div>
+    <div id="hud-mid">
+      <div id="hud-level">المرحلة 1</div>
+      <div id="hud-timer">180</div>
+    </div>
+    <div id="hud-btns">
+      <button id="btn-pause" title="إيقاف مؤقت (P)">⏸</button>
+      <button id="btn-mute" title="كتم الصوت (M)">🔊</button>
+      <button id="btn-music" title="الموسيقى">🎵</button>
+      <button id="btn-full" title="ملء الشاشة (F)">⛶</button>
+      <button id="btn-quit" title="خروج للقائمة">✕</button>
+    </div>
+  </div>
+  <div id="canvas-wrap">
+    <canvas id="c3d"></canvas>
+    <div id="msg-banner" class="hidden"></div>
+    <div id="overlay-pause" class="overlay hidden">
+      <h2>⏸ إيقاف مؤقت</h2>
+      <p>اضغط P للمتابعة</p>
+      <div class="row center">
+        <button class="mbtn primary" id="btn-resume">▶ متابعة</button>
+        <button class="mbtn" id="btn-restart">🔄 إعادة</button>
+        <button class="mbtn" id="btn-quit2">🏠 القائمة</button>
+      </div>
+    </div>
+    <div id="overlay-end" class="overlay hidden">
+      <h2 id="end-title">🏆 الفائز</h2>
+      <p id="end-sub"></p>
+      <div class="row center">
+        <button class="mbtn primary" id="btn-again">🔁 العب مجدداً</button>
+        <button class="mbtn" id="btn-home">🏠 القائمة الرئيسية</button>
+      </div>
+    </div>
+  </div>
+  <div id="controls-bar">
+    <span><b class="p1">P1</b> WASD + مسافة</span>
+    <span><b class="p2">P2</b> أسهم + Enter</span>
+    <span><b class="p3">P3</b> IJKL + حرف U</span>
+    <span><b class="p4">P4</b> Numpad 8456 + Numpad0</span>
+  </div>
+</div>
+
+<!-- ===== Help modal ===== -->
+<div id="modal-help" class="modal hidden">
+  <div class="modal-box">
+    <h2>❓ كيفية اللعب — مثل Little Bombers Returns</h2>
+    <div class="help-grid">
+      <div><h3>🎯 الهدف</h3><p>فجّر الصناديق بالطوب 🧱، اجمع القوى، اقضِ على الوحوش/الخصوم، وفي المغامرة ادخل الباب 🚪.</p></div>
+      <div><h3>💣 القنابل</h3><p>القنبلة تنفجر بعد ~2.5 ثانية بشكل صليب ✚. النار تمتد حسب قوتك. احذر نارك تقتلك! القنابل المتسلسلة تتفاعل معاً.</p></div>
+      <div><h3>🎁 القوى</h3><p>🔥 مدى النار • 💣 قنبلة إضافية • ⚡ سرعة • 👟 ركل القنابل • 🛡️ درع يحمي مرة • ❤️ حياة</p></div>
+      <div><h3>⌨️ التحكم (Desktop)</h3><p>
+        <b class="p1">الأبيض P1:</b> W A S D + Space/F<br>
+        <b class="p2">الأحمر P2:</b> ↑←↓→ + Enter<br>
+        <b class="p3">الأزرق P3:</b> I J K L + U<br>
+        <b class="p4">الأخضر P4:</b> Numpad 8 4 5 6 + Numpad0<br>
+        P إيقاف • M كتم • F ملء شاشة
+      </p></div>
+    </div>
+    <button class="mbtn primary" id="btn-close-help">فهمت! 👍</button>
+  </div>
+</div>
+
+<!-- ===== Settings modal ===== -->
+<div id="modal-settings" class="modal hidden">
+  <div class="modal-box">
+    <h2>⚙️ الإعدادات</h2>
+    <label><input type="checkbox" id="set-sound" checked> المؤثرات الصوتية (مثل الأصلية)</label>
+    <label><input type="checkbox" id="set-music" checked> موسيقى الخلفية</label>
+    <label>مستوى الصوت <input type="range" id="set-vol" min="0" max="100" value="70"></label>
+    <label><input type="checkbox" id="set-shadow" checked> ظلال 3D (أطفئها لو الجهاز بطيء)</label>
+    <label><input type="checkbox" id="set-shake" checked> اهتزاز الشاشة عند الانفجار</label>
+    <button class="mbtn primary" id="btn-close-settings">حفظ ✅</button>
+  </div>
+</div>
+
+<script src="three.min.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
