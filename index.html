@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>مرسال — تطبيق مراسلة شبيه بواتساب</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%2325D366'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white'>م</text></svg>">
+</head>
+<body>
+
+<!-- ===== شاشة الدخول ===== -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-circle">م</div>
+      <h1>مرسال</h1>
+      <p>مراسلة سريعة وآمنة — شبيه بواتساب</p>
+    </div>
+    <div class="login-form">
+      <label>الاسم المعروض</label>
+      <input id="loginName" type="text" placeholder="مثال: أحمد أنور" maxlength="30" autocomplete="name">
+      <label>رقم الهاتف</label>
+      <div class="phone-row">
+        <input id="loginPhone" type="tel" placeholder="01xxxxxxxxx" maxlength="15" dir="ltr">
+        <span class="phone-prefix" dir="ltr">+20</span>
+      </div>
+      <label>اختر لون صورتك</label>
+      <div class="color-pick" id="colorPick"></div>
+      <button id="loginBtn" class="btn-primary">بدء المراسلة ←</button>
+      <p class="login-hint">تُحفظ بياناتك محليًا في متصفحك فقط. جرّب إرسال رسالة وستصلك ردود تلقائية ذكية.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== التطبيق ===== -->
+<div id="app" class="app hidden">
+
+  <!-- الشريط الجانبي -->
+  <aside class="sidebar" id="sidebar">
+    <header class="side-header">
+      <div class="me" id="meBlock">
+        <div class="avatar" id="myAvatar">؟</div>
+        <div class="me-info">
+          <strong id="myName">—</strong>
+          <span class="online-dot"></span><small>متصل الآن</small>
+        </div>
+      </div>
+      <div class="icon-actions">
+        <button title="حالة جديدة" id="btnNewStatus">◉</button>
+        <button title="محادثة جديدة" id="btnNewChat">✎</button>
+        <button title="مجموعة جديدة" id="btnNewGroup">⚑</button>
+        <button title="الوضع الليلي" id="btnTheme">◐</button>
+        <button title="تسجيل الخروج" id="btnLogout">⏻</button>
+      </div>
+    </header>
+
+    <div class="search-bar">
+      <span>🔍</span>
+      <input id="searchInput" type="text" placeholder="ابحث في المحادثات">
+    </div>
+
+    <div class="filters" id="chatFilters">
+      <button class="active" data-f="all">الكل</button>
+      <button data-f="unread">غير مقروء</button>
+      <button data-f="groups">المجموعات</button>
+      <button data-f="starred">المميزة ⭐</button>
+    </div>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="chats">💬 الدردشات <span class="badge" id="totalUnread"></span></button>
+      <button class="tab" data-tab="status">◉ الحالة</button>
+      <button class="tab" data-tab="calls">📞 المكالمات</button>
+    </nav>
+
+    <main class="lists">
+      <ul id="chatList" class="chat-list"></ul>
+      <ul id="statusList" class="chat-list hidden"></ul>
+      <ul id="callList" class="chat-list hidden"></ul>
+    </main>
+
+    <footer class="side-footer">🔒 رسائلك محمية بتشفير طرف-لطرف (محاكاة محلية)</footer>
+  </aside>
+
+  <!-- نافذة المحادثة -->
+  <section class="chat-pane" id="chatPane">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-art">💬</div>
+      <h2>مرسال ويب</h2>
+      <p>اختر محادثة من القائمة لبدء المراسلة.<br>أرسل صورًا ورسائل صوتية، وجرّب الردود والمكالمات والحالات.</p>
+      <div class="empty-tips">
+        <span>💡 اضغط كليك يمين على أي رسالة للرد / الحذف / التمييز</span>
+        <span>🎤 زر الميكروفون يسجّل رسالة صوتية حقيقية</span>
+        <span>🌙 جرّب الوضع الليلي من الأعلى</span>
+      </div>
+    </div>
+
+    <div class="chat-open hidden" id="chatOpen">
+      <header class="chat-header">
+        <button class="back-btn" id="backBtn">→</button>
+        <div class="avatar" id="chatAvatar">؟</div>
+        <div class="chat-peer">
+          <strong id="chatName">—</strong>
+          <small id="chatPresence">—</small>
+        </div>
+        <div class="icon-actions">
+          <button id="btnVoiceCall" title="مكالمة صوتية">📞</button>
+          <button id="btnVideoCall" title="مكالمة فيديو">🎥</button>
+          <button id="btnChatInfo" title="معلومات">ⓘ</button>
+        </div>
+      </header>
+
+      <div class="date-chip" id="dateChip">اليوم</div>
+      <div class="messages" id="messages"></div>
+      <div class="typing-bar hidden" id="typingBar"><span class="dots"><i></i><i></i><i></i></span> <span id="typingWho"></span> يكتب الآن…</div>
+
+      <div class="reply-preview hidden" id="replyPreview">
+        <div><strong id="replyTo"></strong><p id="replyText"></p></div>
+        <button id="cancelReply">✕</button>
+      </div>
+
+      <footer class="composer">
+        <button id="emojiBtn" title="إيموجي">😊</button>
+        <button id="attachBtn" title="إرفاق صورة">📎</button>
+        <input type="file" id="imgInput" accept="image/*" class="hidden">
+        <input id="msgInput" type="text" placeholder="اكتب رسالة" autocomplete="off" maxlength="1000">
+        <button id="recordBtn" title="رسالة صوتية">🎤</button>
+        <button id="sendBtn" class="btn-send hidden" title="إرسال">➤</button>
+      </footer>
+      <div class="emoji-panel hidden" id="emojiPanel"></div>
+      <div class="rec-banner hidden" id="recBanner">
+        <span class="rec-dot"></span><span id="recTime">0:00</span>
+        <span class="rec-wave">▂▄▆▄▂▆▄▂</span>
+        <button id="cancelRec">إلغاء</button>
+        <button id="stopRec" class="btn-primary small">إرسال ✓</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- عارض الحالة -->
+<div id="statusViewer" class="modal hidden">
+  <div class="status-card">
+    <div class="status-progress" id="statusProgress"></div>
+    <div class="status-head"><span id="statusOwner"></span><button class="close" data-close="statusViewer">✕</button></div>
+    <div class="status-body" id="statusBody"></div>
+    <input id="statusReply" placeholder="رد على الحالة…">
+  </div>
+</div>
+
+<!-- محادثة جديدة -->
+<div id="newChatModal" class="modal hidden">
+  <div class="sheet">
+    <div class="sheet-head"><strong>محادثة جديدة</strong><button class="close" data-close="newChatModal">✕</button></div>
+    <input id="newChatSearch" placeholder="ابحث بالاسم…">
+    <ul id="newChatList" class="chat-list"></ul>
+    <div class="sheet-head"><strong>أو أنشئ جهة جديدة</strong></div>
+    <div class="row-form">
+      <input id="newContactName" placeholder="اسم جهة الاتصال">
+      <button id="createContact" class="btn-primary small">إضافة +</button>
+    </div>
+  </div>
+</div>
+
+<!-- مجموعة جديدة -->
+<div id="newGroupModal" class="modal hidden">
+  <div class="sheet">
+    <div class="sheet-head"><strong>مجموعة جديدة</strong><button class="close" data-close="newGroupModal">✕</button></div>
+    <input id="groupName" placeholder="اسم المجموعة (مثال: عائلة ❤️)">
+    <p class="muted">اختر الأعضاء:</p>
+    <ul id="groupMembers" class="chat-list pick"></ul>
+    <button id="createGroup" class="btn-primary">إنشاء المجموعة</button>
+  </div>
+</div>
+
+<!-- معلومات -->
+<div id="infoModal" class="modal hidden">
+  <div class="sheet">
+    <div class="sheet-head"><strong id="infoName">—</strong><button class="close" data-close="infoModal">✕</button></div>
+    <div id="infoBody" class="info-body"></div>
+    <div class="row-form">
+      <button id="muteBtn" class="btn-ghost">🔕 كتم / إلغاء الكتم</button>
+      <button id="archiveBtn" class="btn-ghost">📦 أرشفة</button>
+      <button id="clearBtn" class="btn-ghost danger">🗑 مسح المحادثة</button>
+    </div>
+  </div>
+</div>
+
+<!-- مكالمة -->
+<div id="callOverlay" class="modal hidden">
+  <div class="call-card">
+    <div class="avatar big" id="callAvatar">؟</div>
+    <h2 id="callName">—</h2>
+    <p id="callState">جارٍ الاتصال…</p>
+    <p id="callTimer">0:00</p>
+    <div class="call-btns">
+      <button id="endCall" class="call-end">✕ إنهاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- قائمة سياقية -->
+<div id="ctxMenu" class="ctx hidden"></div>
+<div id="toast" class="toast hidden"></div>
+<div id="lightbox" class="modal hidden"><img id="lightboxImg" alt="صورة"><button class="close floating" data-close="lightbox">✕</button></div>
+
+<script src="app.js"></script>
+</body>
+</html>
